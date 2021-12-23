@@ -21,9 +21,24 @@ class ShellView extends StatelessWidget {
                       ? Icon(Icons.arrow_back)
                       : Icon(Icons.shopping_bag),
                   onPressed: () {
-                    Get.offNamed('/products');
+                    //Get.offAllNamed('/products');
+                    Get.find<AppService>().title.value == 'Shopping Mall';
+                    Get.back();
                   })),
               actions: [
+                Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: IconButton(
+                    icon: Icon(
+                      Icons.qr_code_scanner_sharp,
+                      size: 30,
+                    ),
+                    onPressed: () {
+                      Get.find<AppService>().scanBarcodeNormal();
+                      //Get.offNamed('/cart');
+                    },
+                  ),
+                ),
                 Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Stack(children: <Widget>[
@@ -34,7 +49,7 @@ class ShellView extends StatelessWidget {
                       ),
                       onPressed: () {
                         Get.find<AppService>().title.value = 'Cart';
-                        Get.offNamed('/cart');
+                        Get.toNamed('/cart');
                       },
                     ),
                     new Positioned(

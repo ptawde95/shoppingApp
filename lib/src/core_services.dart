@@ -1,9 +1,13 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
+
+import 'constants.dart';
 
 class AppService extends GetxService {
   AppService({
@@ -34,6 +38,9 @@ class AppService extends GetxService {
   // FOR CURRENT ROUTE
   RxString title = ''.obs;
 
+  //FOR PRODUCTS LIST
+  Rx<List> availbleproductList = Rx<List>([]);
+
   Future<AppService> init() async {
     // SHELL STORAGE SERVICES
     if (enabledStorageService) {
@@ -60,22 +67,41 @@ class AppService extends GetxService {
     @required String key,
     @required dynamic object,
   }) {
-    if (cartdata[key] != null) {
-      var item =
-          getCartItembyId(fieldName: 'id', key: key, uniqueValue: object['id']);
-      if (item != null) {
-        cartdata[key].removeAt(cartdata[key].indexOf(item));
+    try {
+      print('Inside cartdata');
+
+      if (cartdata.length > 0) {
+        print('inside cartdata length > 0 ');
+        // if (cartdata[key] != null) {
+
+        //print(cartdata[key]);
+        var item = getCartItembyId(
+            fieldName: 'id', key: key, uniqueValue: object['id']);
+        print('After item check ');
+        print(item);
+        if (item != null) {
+          print('if item already exists');
+
+          int qty = cartdata[key][0]['Quantity'];
+          qty++;
+          cartdata[key][0]['Quantity'] = qty;
+        } else {
+          print('else item == null ');
+
+          cartdata[key] = [object];
+
+          cartItems++;
+        }
+      } else {
+        cartdata[key] = [object];
+        cartItems++;
       }
-
-      cartItems++;
-
-      cartdata[key].add(object);
-    } else
-      cartdata[key] = [object];
-    cartItems++;
-
-    print('cartdata');
-    print(cartdata);
+      print('cartdata after operation');
+      print(cartdata);
+    } catch (e) {
+      print('Error in addToCart service');
+      print(e);
+    }
   }
 
   ///RETURNS THE CART DATA FOR REQUESTED KEY
@@ -101,10 +127,11 @@ class AppService extends GetxService {
 
   /// TO CHECK WHETHER THE ITEM ALREADT EXIST IN THE CART
 
-  dynamic getCartItembyId({String fieldName, String uniqueValue, String key}) {
+  dynamic getCartItembyId({String fieldName, int uniqueValue, String key}) {
     try {
-      return cartdata[key].firstWhere(
-        (element) => element[fieldName] == uniqueValue,
+      print('getCartItembyId');
+      return cartdata.keys.firstWhere(
+        (element) => element == uniqueValue.toString(),
         orElse: () => null,
       );
     } catch (e) {
@@ -177,6 +204,57 @@ class AppService extends GetxService {
       print('Error inside API SERVICE POST REQUEST ');
       print(e);
       return Future.error(e);
+    }
+  }
+
+  // TO SCAN THE BARCODE USING SCANNER AND CAPTURE THE CODE.
+
+  String searchFieldContent;
+  Future<void> scanBarcodeNormal() async {
+    String barcodeScanRes;
+    // Platform messages may fail, so we use a try/catch PlatformException.
+    try {
+      barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
+          "#ff6666", "Cancel", true, ScanMode.BARCODE);
+      print('barcodeScanRes');
+      print(barcodeScanRes);
+    } on PlatformException {
+      barcodeScanRes = BarcodeScanHelper.PLATFORM_VERSION_ERROR;
+    }
+
+    if (barcodeScanRes != BarcodeScanHelper.PLATFORM_VERSION_ERROR &&
+        barcodeScanRes != '-1') {
+      addtoCartUsingScan(barcodeScanRes);
+    } else if (barcodeScanRes == BarcodeScanHelper.PLATFORM_VERSION_ERROR) {
+      Get.snackbar('Scan operation Failed',
+          'Something went wrong while scanning barcode, Please Try again!');
+    }
+  }
+
+  void addtoCartUsingScan(String scanBarcode) {
+    try {
+      var data = availbleproductList.value.firstWhere(
+          (element) => element['UPC'].toString() == scanBarcode,
+          orElse: () => null);
+      print('Scan Product data');
+      print(data);
+      if (data != null) {
+        var id = data['id'];
+
+        // ADDING THE SCANNED PRODUCT TO CART
+        addToCart(key: data['id'].toString(), object: data);
+        Get.snackbar(
+          "Product Added",
+          "Product added to the cart",
+          snackPosition: SnackPosition.BOTTOM,
+          colorText: Colors.white,
+          backgroundColor: Colors.greenAccent.shade700,
+        );
+      } else {
+        Get.snackbar('Non - Inventory Product', 'We don"t sale this Product');
+      }
+    } catch (e) {
+      print('Error in addtoCart');
     }
   }
 }

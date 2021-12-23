@@ -28,7 +28,7 @@ class ProductCatalogView extends GetView<ProductController> {
                         scrollInfo.metrics.maxScrollExtent) {
                       // print('In Next Paged event');
 
-                      controller.getProductlist();
+                      controller.getProductlist(isinitialloading: true);
                     }
                     return true;
                   },

@@ -7,7 +7,6 @@ class ProductListItem extends StatelessWidget {
   final int index;
   dynamic product;
   String keyIndex;
- 
 
   ProductListItem({
     Key key,
@@ -124,7 +123,7 @@ class ProductListItem extends StatelessWidget {
                           print('tapped');
                           onPressed(keyIndex, product);
                           Get.snackbar(
-                            "",
+                            "Product Removed",
                             "Product removed from the cart",
                             snackPosition: SnackPosition.BOTTOM,
                             colorText: Colors.white,

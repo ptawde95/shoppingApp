@@ -42,10 +42,10 @@ class ProductController extends GetxController with StateMixin {
             pageNumber: currentPage,
           )
           .then((proddata) => {
-                // print('proddata'),
-                //print(proddata['data']),
+                /// print('proddata'),
+                ///print(proddata),
 
-                if (proddata['data'].length < pageSize)
+                if (proddata.length < pageSize)
                   {
                     print('norecordsfound'),
                     isdataRemaining = false,
@@ -54,12 +54,13 @@ class ProductController extends GetxController with StateMixin {
                 // HANDLE FOR INITIAL LOADING
                 if (isinitialloading)
                   {
-                    productList.value = proddata['data'],
+                    productList.value = proddata,
+                    Get.find<AppService>().availbleproductList.value = proddata
                   }
                 else
                   {
                     productList.update((val) {
-                      val.addAll(proddata['data']);
+                      val.addAll(proddata);
                     }),
                   },
 
