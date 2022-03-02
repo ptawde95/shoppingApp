@@ -224,7 +224,23 @@ class AppService extends GetxService {
 
     if (barcodeScanRes != BarcodeScanHelper.PLATFORM_VERSION_ERROR &&
         barcodeScanRes != '-1') {
-      addtoCartUsingScan(barcodeScanRes);
+      // Get.snackbar(
+      //   'Barcode Scanned Successfully',
+      //   barcodeScanRes,
+      //   duration: Duration(seconds: 5),
+      //   backgroundColor: Colors.lightBlueAccent,
+      // );
+      Get.defaultDialog(
+          title: 'Barcode Scanned',
+          middleText: barcodeScanRes,
+          middleTextStyle: Theme.of(Get.context)
+              .textTheme
+              .headline5
+              .copyWith(fontWeight: FontWeight.bold),
+          titleStyle: Theme.of(Get.context)
+              .textTheme
+              .headline5
+              .copyWith(fontWeight: FontWeight.normal));
     } else if (barcodeScanRes == BarcodeScanHelper.PLATFORM_VERSION_ERROR) {
       Get.snackbar('Scan operation Failed',
           'Something went wrong while scanning barcode, Please Try again!');
